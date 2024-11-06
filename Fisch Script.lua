@@ -5,28 +5,16 @@ local Main = library:CreateWindow("Main","Crimson")
 local tab = Main:CreateTab("Cheats")
 local tab2 = Main:CreateTab("Misc")
 
-tab:CreateButton("Hi",function()
-    print("clicked")
+tab:CreateToggle("Auto Sell",function(a)
+
 end)
 
-tab:CreateToggle("Auto Sell",function(a)
+tab:CreateCheckbox("Auto Sell",function(a)
     _G.AUTOSELL = a
     while _G.AUTOSELL do
         wait(2)
         workspace.world.npcs:FindFirstChild("Mel Merchant").merchant.sellall:InvokeServer()
     end
-end)
-
-tab:CreateSlider("Wow",1,16,function(a)
-    print(a)
-end)
-
-tab:CreateCheckbox("Aimbot",function(a)
-    print(a)
-end)
-
-tab:CreateDropdown("Word",{"Sung","Jin","Woo"},function(a)
-    print(a)
 end)
 
 tab2:CreateButton("Hello",function()
