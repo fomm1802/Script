@@ -4,8 +4,15 @@ local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
+-- Remove existing FPS and Ping UI if it exists
+local existingGui = PlayerGui:FindFirstChild("StatsDisplay")
+if existingGui then
+    existingGui:Destroy()
+end
+
 -- Create ScreenGui and configure properties
 local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "StatsDisplay"
 screenGui.Parent = PlayerGui
 
 -- Create TextLabel for FPS and Ping display
@@ -41,7 +48,7 @@ local function updatePing()
 end
 
 -- Update FPS and Ping display every second
-while wait(.5) do
+while wait(0.25) do
     updatePing() -- Get the latest Ping
     statsLabel.Text = string.format("FPS: %d\nPing: %d ms", frames, ping) -- Display FPS and Ping
     frames = 0
