@@ -17,7 +17,7 @@ screenGui.Parent = PlayerGui
 
 -- Create TextLabel for FPS and Ping display
 local statsLabel = Instance.new("TextLabel")
-statsLabel.Size = UDim2.new(0, 100, 0, 50)
+statsLabel.Size = UDim2.new(0, 200, 0, 50)
 statsLabel.Position = UDim2.new(0, 10, 1, -60) -- Bottom left corner
 statsLabel.AnchorPoint = Vector2.new(0, 1)
 statsLabel.BackgroundTransparency = 0.5
@@ -40,16 +40,23 @@ RS.RenderStepped:Connect(function()
     frames = frames + 1
 end)
 
--- Function to update Ping
+-- Function to calculate Ping
 local function updatePing()
-    local start = tick()
-    Player:RequestStreamAroundAsync(Player.Character.Position)
-    ping = math.floor((tick() - start) * 1000) -- Ping in milliseconds
+    local start = tick() -- Record time before the request
+    local success, result = pcall(function()
+        -- Use a safe method to check ping by testing the player position request
+        Player:RequestStreamAroundAsync(Player.Character and Player.Character.HumanoidRootPart.Position or Vector3.new(0,0,0))
+    end)
+    if success then
+        ping = math.floor((tick() - start) * 1000) -- Convert time to milliseconds
+    else
+        ping = "N/A" -- If request fails, display "N/A"
+    end
 end
 
 -- Update FPS and Ping display every second
 while wait(0.25) do
     updatePing() -- Get the latest Ping
-    statsLabel.Text = string.format("FPS: %d\nPing: %d ms", frames, ping) -- Display FPS and Ping
+    statsLabel.Text = string.format("FPS: %d\nPing: %s ms", frames, ping) -- Display FPS and Ping
     frames = 0
 end
