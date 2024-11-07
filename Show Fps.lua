@@ -41,7 +41,7 @@ RS.RenderStepped:Connect(function()
 end)
 
 -- Update FPS display every second with a debounce mechanism for stability
-while wait(1) do
+while wait(0.25) do
     local currentTime = tick()
 
     -- Update FPS only once per second
