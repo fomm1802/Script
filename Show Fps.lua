@@ -29,7 +29,7 @@ RS.RenderStepped:Connect(function()
 end)
 
 -- Update FPS display every second
-while wait(1) do
+while wait(0.5) do
     fpsLabel.Text = string.format("FPS: %d", frames)
     frames = 0
 end
