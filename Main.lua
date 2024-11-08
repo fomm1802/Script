@@ -46,6 +46,22 @@ tab:Toggle("Teleport Loop Afk", false, function(t)
     end
 end)
 
+tab:Toggle("Teleport Loop Afk 2 Player", false, function(t)
+    teleportLoop = t  -- Update teleport loop state
+    if teleportLoop then
+        -- Start teleport loop
+        spawn(function()
+            while teleportLoop do
+                local player = game.Players.LocalPlayer
+                if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    player.Character.HumanoidRootPart.CFrame = CFrame.new(-1669.128173828125, -214.18020629882812, -2840.79736328125)
+                end
+                wait(1)  -- Delay between teleports
+            end
+        end)
+    end
+end)
+
 tab2:Button("Custom Keyboard Gui", function()
     loadstring(game:HttpGet("https://gist.githubusercontent.com/RedZenXYZ/4d80bfd70ee27000660e4bfa7509c667/raw/da903c570249ab3c0c1a74f3467260972c3d87e6/KeyBoard%2520From%2520Ohio%2520Fr%2520Fr", true))()
 end)
