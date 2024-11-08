@@ -2,7 +2,7 @@
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/UI-Libs/main/Vape.txt"))()
 
 -- Create Main Window
-local win = lib:Window("PREVIEW", Color3.fromRGB(44, 120, 224), Enum.KeyCode.RightControl)
+local win = lib:Window("PREVIEW", Color3.fromRGB(44, 120, 224), Enum.KeyCode.Home)
 
 -- Create Tabs
 local tab = win:Tab("Tab")
@@ -66,7 +66,7 @@ tab2:Button("Simple Spy", function()
 end)
 
 -- Keybind Button (RightShift)
-tab10:Bind("Bind", Enum.KeyCode.RightShift, function()
+tab10:Bind("Bind", Enum.KeyCode.Home, function()
     print("Pressed!")
 end)
 
