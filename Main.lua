@@ -62,7 +62,7 @@ tab2:Button("Simple Spy", function()
 end)
 
 -- Keybind Button (RightShift)
-tab2:Bind("Bind", Enum.KeyCode.RightShift, function()
+tab10:Bind("Bind", Enum.KeyCode.RightShift, function()
     print("Pressed!")
 end)
 
