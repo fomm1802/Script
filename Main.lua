@@ -67,8 +67,12 @@ tab2:Button("Custom Keyboard Gui", function()
 end)
 
 -- Position Finder GUI Button
-tab2:Button("Button Position Finder", function()
+tab2:Button("Position Finder", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/fomm1802/Script/refs/heads/main/Position%20Finder%20GUI.Lua", true))()
+end)
+
+tab2:Button("Position V2 ?", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/fomm1802/Script/refs/heads/main/Position%20%3F.lua", true))()
 end)
 
 -- Turtle Spy Button
