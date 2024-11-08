@@ -66,7 +66,7 @@ tab2:Button("Simple Spy", function()
 end)
 
 -- Keybind Button (RightShift)
-tab10:Bind("Bind", Enum.KeyCode.Home, function()
-    print("Pressed!")
-end)
+--tab10:Bind("Bind", Enum.KeyCode.Home, function()
+--print("Pressed!")
+--end)
 
