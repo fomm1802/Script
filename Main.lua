@@ -47,7 +47,7 @@ tab:Toggle("Teleport Loop Afk", false, function(t)
     if teleportLoopAfk then
         spawn(function()
             while teleportLoopAfk do
-                teleportToPosition(CFrame.new(-1500.52417, -234.719772, -2859.19727, 1, -4.61143799e-08, -1.60626807e-15, 4.61143799e-08, 1, 8.07019962e-09, 1.23411578e-15, -8.07019962e-09, 1))
+                teleportToPosition(CFrame.new(-1610.04749, -228.248169, -2752.14233, 0.173476815, -2.74406258e-08, 0.984837949, 8.12541867e-10, 1, 2.77199597e-08, -0.984837949, -4.00854816e-09, 0.173476815))
                 wait(0.1)
             end
         end)
