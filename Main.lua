@@ -2,7 +2,7 @@
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/UI-Libs/main/Vape.txt"))()
 
 -- Create Main Window
-local win = lib:Window("PREVIEW", Color3.fromRGB(44, 120, 224), Enum.KeyCode.Home)
+local win = lib:Window("PREVIEW", Color3.fromRGB(44, 120, 224), Enum.KeyCode.RightControl)
 
 -- Create Tabs
 local tab = win:Tab("Tab")
