@@ -8,7 +8,6 @@ local win = lib:Window("PREVIEW", Color3.fromRGB(44, 120, 224), Enum.KeyCode.Rig
 local tab = win:Tab("Tab")
 local tab2 = win:Tab("Tools")
 local tab10 = win:Tab("ST")
-local changeclr = win:Tab("Change UI Color")
 
 -- Variables
 local teleportLoop = false  -- To manage the teleport loop state
@@ -49,7 +48,7 @@ end)
 
 -- Position Finder GUI Button
 tab2:Button("Button Position Finder", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/fomm1802/Script/refs/heads/main/Position%20Finder%20GUI.Lua"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/fomm1802/Script/refs/heads/main/Position%20Finder%20GUI.Lua", true))()
 end)
 
 -- Turtle Spy Button
@@ -59,18 +58,11 @@ end)
 
 -- Simple Spy Button
 tab2:Button("Simple Spy", function()
-    loadstring(game:HttpGet("https://github.com/exxtremestuffs/SimpleSpySource/raw/master/SimpleSpy.lua"))()
+    loadstring(game:HttpGet("https://github.com/exxtremestuffs/SimpleSpySource/raw/master/SimpleSpy.lua", true))()
 end)
 
 -- Keybind Button (RightShift)
-tab10:Bind("Bind", Enum.KeyCode.RightShift, function()
+tab2:Bind("Bind", Enum.KeyCode.RightShift, function()
     print("Pressed!")
 end)
 
--- Label in the "ST" Tab
-tab10:Label("Label")
-
--- Change UI Color Tab
-changeclr:Colorpicker("Change UI Color", Color3.fromRGB(44, 120, 224), function(t)
-    lib:ChangePresetColor(Color3.fromRGB(t.R * 255, t.G * 255, t.B * 255))
-end)
