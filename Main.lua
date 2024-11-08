@@ -1,10 +1,11 @@
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/UI-Libs/main/Vape.txt"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/fomm1802/Script/refs/heads/main/Show%20Fps.lua"))() --Show FPS
 
 local win = lib:Window("PREVIEW", Color3.fromRGB(44, 120, 224), Enum.KeyCode.RightControl)
 
 local tab = win:Tab("Tab")
 
-local tab2 = win:Tab("B")
+local tab2 = win:Tab("Tools")
 
 local tab10 = win:Tab("ST")
 
@@ -45,10 +46,17 @@ tab:Toggle("Teleport Loop Afk ", false, function(t)
 end)
 
 -- เพิ่มปุ่ม Button สำหรับเปิด Position Finder GUI
-tab:Button("Button Position Finder", function()
+tab2:Button("Button Position Finder", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/fomm1802/Script/refs/heads/main/Position%20Finder%20GUI.Lua"))()
 end)
 
+tab2:Button("Turtle Spy", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Turtle-Brand/Turtle-Spy/main/source.lua", true))()
+end)
+
+tab2:Button("Simple Spy", function()
+    loadstring(game:HttpGet("https://github.com/exxtremestuffs/SimpleSpySource/raw/master/SimpleSpy.lua"))()
+end)
 -- tab:Slider("Slider", 0, 100, 30, function(t)
 --     print(t)
 -- end)
