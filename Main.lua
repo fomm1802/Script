@@ -9,58 +9,64 @@ local tab = win:Tab("Tab")
 local tab2 = win:Tab("Tools")
 local tab10 = win:Tab("ST")
 
--- Variables
-local teleportLoop = false  -- To manage the teleport loop state
+-- Load Libraries
+local tweenService = game:GetService("TweenService")
+local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Linear) -- ตั้งเวลาในการเคลื่อนที่เป็น 1 วินาที
 
--- Teleport Loop 1 (Teleport to specific position)
+-- Main Teleport Function with Tween
+local function teleportToPosition(position)
+    local player = game.Players.LocalPlayer
+    if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local humanoidRootPart = player.Character.HumanoidRootPart
+        local tween = tweenService:Create(humanoidRootPart, tweenInfo, {CFrame = position})
+        tween:Play()
+    end
+end
+
+-- Toggle Functions for Different Positions
+local teleportLoop1 = false
+local teleportLoopAfk = false
+local teleportLoopAfk2 = false
+
+-- Teleport Loop 1 (Position 1)
 tab:Toggle("Teleport Loop 1", false, function(t)
-    teleportLoop = t  -- Update teleport loop state
-    if teleportLoop then
-        -- Start teleport loop
+    teleportLoop1 = t
+    if teleportLoop1 then
         spawn(function()
-            while teleportLoop do
-                local player = game.Players.LocalPlayer
-                if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                    player.Character.HumanoidRootPart.CFrame = CFrame.new(621.4434204101562, 130.55836486816406, 342.1183776855469)
-                end
-                wait(1)  -- Delay between teleports
+            while teleportLoop1 do
+                teleportToPosition(CFrame.new(621.4434204101562, 130.55836486816406, 342.1183776855469))
+                wait(1)
             end
         end)
     end
 end)
 
--- Teleport Loop Afk (Teleport to another position)
+-- Teleport Loop Afk (Position 2)
 tab:Toggle("Teleport Loop Afk", false, function(t)
-    teleportLoop = t  -- Update teleport loop state
-    if teleportLoop then
-        -- Start teleport loop
+    teleportLoopAfk = t
+    if teleportLoopAfk then
         spawn(function()
-            while teleportLoop do
-                local player = game.Players.LocalPlayer
-                if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                    player.Character.HumanoidRootPart.CFrame = CFrame.new(-1500.524169921875, -234.71974182128906, -2859.197265625)
-                end
-                wait(1)  -- Delay between teleports
+            while teleportLoopAfk do
+                teleportToPosition(CFrame.new(-1500.524169921875, -234.71974182128906, -2859.197265625))
+                wait(1)
             end
         end)
     end
 end)
 
+-- Teleport Loop Afk 2 Player (Position 3)
 tab:Toggle("Teleport Loop Afk 2 Player", false, function(t)
-    teleportLoop = t  -- Update teleport loop state
-    if teleportLoop then
-        -- Start teleport loop
+    teleportLoopAfk2 = t
+    if teleportLoopAfk2 then
         spawn(function()
-            while teleportLoop do
-                local player = game.Players.LocalPlayer
-                if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                    player.Character.HumanoidRootPart.CFrame = CFrame.new(-1669.128173828125, -214.18020629882812, -2840.79736328125)
-                end
-                wait(1)  -- Delay between teleports
+            while teleportLoopAfk2 do
+                teleportToPosition(CFrame.new(-1669.128173828125, -214.18020629882812, -2840.79736328125))
+                wait(1)
             end
         end)
     end
 end)
+
 
 tab2:Button("Custom Keyboard Gui", function()
     loadstring(game:HttpGet("https://gist.githubusercontent.com/RedZenXYZ/4d80bfd70ee27000660e4bfa7509c667/raw/da903c570249ab3c0c1a74f3467260972c3d87e6/KeyBoard%2520From%2520Ohio%2520Fr%2520Fr", true))()
