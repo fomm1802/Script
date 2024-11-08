@@ -46,6 +46,10 @@ tab:Toggle("Teleport Loop Afk", false, function(t)
     end
 end)
 
+tab2:Button("Custom Keyboard Gui", function()
+    loadstring(game:HttpGet("https://gist.githubusercontent.com/RedZenXYZ/4d80bfd70ee27000660e4bfa7509c667/raw/da903c570249ab3c0c1a74f3467260972c3d87e6/KeyBoard%2520From%2520Ohio%2520Fr%2520Fr", true))()
+end)
+
 -- Position Finder GUI Button
 tab2:Button("Button Position Finder", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/fomm1802/Script/refs/heads/main/Position%20Finder%20GUI.Lua", true))()
