@@ -11,7 +11,7 @@ local tab10 = win:Tab("ST")
 
 -- Load Libraries
 local tweenService = game:GetService("TweenService")
-local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Linear) -- ตั้งเวลาในการเคลื่อนที่เป็น 1 วินาที
+local tweenInfo = TweenInfo.new(0, Enum.EasingStyle.Linear) -- ตั้งเวลาในการเคลื่อนที่เป็น 0 วินาที
 
 -- Main Teleport Function with Tween
 local function teleportToPosition(position)
