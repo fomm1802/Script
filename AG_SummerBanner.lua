@@ -4,6 +4,7 @@ local player = game.Players.LocalPlayer
 local BANNER = "SummerBanner"      -- Banner ที่จะสุ่ม
 local PRICE_PER_SUMMON = 500       -- ราคาต่อการสุ่ม 1 ครั้ง
 local CHECK_INTERVAL = 1           -- วินาทีระหว่างเช็ค
+local ENABLE_LOG = false            -- true = เปิด log, false = ปิด log
 
 -- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -42,7 +43,9 @@ local function doSummon(times)
         [2] = tostring(times)
     }
     summonEvent:InvokeServer(unpack(args))
-    print("Summon: " .. times .. " ครั้ง (Banner: " .. BANNER .. ")")
+    if ENABLE_LOG then
+        print("Summon: " .. times .. " ครั้ง (Banner: " .. BANNER .. ")")
+    end
 end
 
 -- Loop เช็คตลอดเวลา
@@ -57,12 +60,14 @@ while task.wait(CHECK_INTERVAL) do
     if summonable > 0 then
         doSummon(summonable)
     else
-        if beachBall < PRICE_PER_SUMMON then
-            print("ยังสุ่มไม่ได้: BeachBall ไม่พอ (มีแค่ " .. beachBall .. ")")
-        elseif spaceLeft <= 0 then
-            print("ยังสุ่มไม่ได้: Inventory เต็ม (เต็ม " .. inventoryMax .. ")")
-        else
-            print("ยังสุ่มไม่ได้: เงื่อนไขอื่น")
+        if ENABLE_LOG then
+            if beachBall < PRICE_PER_SUMMON then
+                print("ยังสุ่มไม่ได้: BeachBall ไม่พอ (มีแค่ " .. beachBall .. ")")
+            elseif spaceLeft <= 0 then
+                print("ยังสุ่มไม่ได้: Inventory เต็ม (เต็ม " .. inventoryMax .. ")")
+            else
+                print("ยังสุ่มไม่ได้: เงื่อนไขอื่น")
+            end
         end
     end
 end
