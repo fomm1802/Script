@@ -4,7 +4,19 @@ local player = game.Players.LocalPlayer
 local BANNER = "SummerBanner"      -- Banner ที่จะสุ่ม
 local PRICE_PER_SUMMON = 500       -- ราคาต่อการสุ่ม 1 ครั้ง
 local CHECK_INTERVAL = 1           -- วินาทีระหว่างเช็ค
-local ENABLE_LOG = false            -- true = เปิด log, false = ปิด log
+local ENABLE_LOG = false           -- true = เปิด log, false = ปิด log
+
+-- กำหนด Map/Server ID ที่อนุญาตให้รัน
+local REQUIRED_PLACE_ID = 17282336195
+local REQUIRED_GAME_ID  = 5912620016
+
+-- เช็ค ID ก่อน
+if game.PlaceId ~= REQUIRED_PLACE_ID or game.GameId ~= REQUIRED_GAME_ID then
+    if ENABLE_LOG then
+        print("⛔ แมพหรือเซิร์ฟเวอร์ไม่ตรง ID Script จะไม่รัน")
+    end
+    return  -- ออกจาก Script
+end
 
 -- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
