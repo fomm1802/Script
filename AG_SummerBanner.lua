@@ -3,7 +3,7 @@ local player = game.Players.LocalPlayer
 -- CONFIG
 local BANNER = "SummerBanner"      -- Banner ที่จะสุ่ม
 local PRICE_PER_SUMMON = 500       -- ราคาต่อการสุ่ม 1 ครั้ง
-local CHECK_INTERVAL = 1           -- วินาทีระหว่างเช็ค
+local CHECK_INTERVAL = .1           -- วินาทีระหว่างเช็ค
 local ENABLE_LOG = false           -- true = เปิด log, false = ปิด log
 
 -- กำหนด Map/Server ID ที่อนุญาตให้รัน
