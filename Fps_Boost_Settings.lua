@@ -169,16 +169,23 @@ function updateOptimization()
             clean(obj)
         end
     end
+
+    -- ปรับ Rendering / Fog / Streaming แต่ไม่ยุ่งกับ Mouse
     if selectedLevel == "High" then
         Lighting.FogEnd = 250
         Workspace.StreamingEnabled = true
         Workspace.StreamingTargetRadius = 128
     elseif selectedLevel == "Mid" then
         Lighting.FogEnd = 500
+        Workspace.StreamingEnabled = true
+        Workspace.StreamingTargetRadius = 96
     elseif selectedLevel == "Low" then
         Lighting.FogEnd = 1000
+        Workspace.StreamingEnabled = true
+        Workspace.StreamingTargetRadius = 64
     end
 end
+
 
 -- Create Button Function
 local function createButton(parent, text, size, pos, color, bold)
