@@ -6,8 +6,7 @@
     - Real-time FPS & Memory Monitor
     - Notify System
     - Save Settings (writefile/readfile)
-    ❌ No Maximum Mode
-    ❌ No 3D Rendering Toggle (mouse safe)
+    - ใช้ QualityLevel ลดการ Render (ไม่ปิดเมาส์/GUI)
 --]]
 
 -- Services
@@ -58,7 +57,6 @@ toggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 90)
 toggleButton.TextColor3 = Color3.new(1, 1, 1)
 toggleButton.Font = Enum.Font.GothamBold
 toggleButton.TextSize = 14
-toggleButton.AutoButtonColor = true
 local toggleCorner = Instance.new("UICorner", toggleButton)
 toggleCorner.CornerRadius = UDim.new(0, 8)
 
@@ -75,8 +73,7 @@ local function notify(message, success)
     notif.TextSize = 18
     notif.AnchorPoint = Vector2.new(0.5, 0)
     notif.BorderSizePixel = 0
-    local notifCorner = Instance.new("UICorner", notif)
-    notifCorner.CornerRadius = UDim.new(0, 6)
+    Instance.new("UICorner", notif).CornerRadius = UDim.new(0, 6)
 
     TweenService:Create(notif, TweenInfo.new(0.3), {TextTransparency = 0, BackgroundTransparency = 0.2}):Play()
     task.delay(2, function()
@@ -97,8 +94,7 @@ fpsLabel.Font = Enum.Font.Gotham
 fpsLabel.TextSize = 14
 fpsLabel.Text = "FPS: 0 | Mem: 0MB"
 fpsLabel.BorderSizePixel = 0
-local fpsCorner = Instance.new("UICorner", fpsLabel)
-fpsCorner.CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", fpsLabel).CornerRadius = UDim.new(0, 6)
 
 -- Status Label
 local statusLabel = Instance.new("TextLabel", screenGui)
@@ -120,8 +116,7 @@ frame.Visible = false
 frame.Active = true
 frame.Draggable = true
 frame.BackgroundTransparency = 0.05
-local UICorner = Instance.new("UICorner", frame)
-UICorner.CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
 -- Toggle Frame Visibility
 local uiVisible = false
@@ -144,39 +139,23 @@ title.TextSize = 20
 local levels = {"Low", "Mid", "High"}
 local buttons = {}
 
-local function clean(obj)
-    if obj and obj:IsA("BasePart") then 
-        obj.Material = Enum.Material.SmoothPlastic 
-        obj.Reflectance = 0 
-        obj.CastShadow = false 
-    end
-end
-
-local function removeIf(obj, condition)
-    if condition and obj and obj.Destroy then 
-        pcall(function() obj:Destroy() end) 
-    end
-end
-
+-- Optimization Function
 function updateOptimization()
-    for _, obj in ipairs(Workspace:GetDescendants()) do
-        if selectedLevel == "Low" then
-            removeIf(obj, obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke") or obj:IsA("Fire"))
-        elseif selectedLevel == "Mid" then
-            removeIf(obj, obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Beam") or obj:IsA("SpotLight") or obj:IsA("SurfaceLight") or obj:IsA("PointLight") or obj:IsA("Decal"))
-        elseif selectedLevel == "High" then
-            removeIf(obj, obj:IsA("Texture") or obj:IsA("Sound") or obj:IsA("ForceField") or obj:IsA("Explosion") or obj:IsA("Sparkles") or obj:IsA("BillboardGui") or obj:IsA("SurfaceGui") or obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke") or obj:IsA("Fire"))
-            clean(obj)
-        end
-    end
-    if selectedLevel == "High" then
-        Lighting.FogEnd = 250
-        Workspace.StreamingEnabled = true
-        Workspace.StreamingTargetRadius = 128
-    elseif selectedLevel == "Mid" then
-        Lighting.FogEnd = 500
-    elseif selectedLevel == "Low" then
+    if selectedLevel == "Low" then
+        settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+        Lighting.GlobalShadows = false
         Lighting.FogEnd = 1000
+        Workspace.StreamingTargetRadius = 64
+    elseif selectedLevel == "Mid" then
+        settings().Rendering.QualityLevel = Enum.QualityLevel.Level03
+        Lighting.GlobalShadows = false
+        Lighting.FogEnd = 500
+        Workspace.StreamingTargetRadius = 96
+    elseif selectedLevel == "High" then
+        settings().Rendering.QualityLevel = Enum.QualityLevel.Level05
+        Lighting.GlobalShadows = true
+        Lighting.FogEnd = 250
+        Workspace.StreamingTargetRadius = 128
     end
 end
 
@@ -190,7 +169,6 @@ local function createButton(parent, text, size, pos, color, bold)
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Font = bold and Enum.Font.GothamBold or Enum.Font.Gotham
     btn.TextSize = 16
-    btn.AutoButtonColor = true
     local corner = Instance.new("UICorner", btn)
     corner.CornerRadius = UDim.new(0, 6)
     return btn
