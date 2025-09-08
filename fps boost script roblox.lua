@@ -1,13 +1,13 @@
 --[[ 
-    FPS Boost GUI Pro Edition (Executor Save Version)
+    FPS Boost GUI (Lite Version)
     ✅ Features
-    - GUI ระดับ Pro (Low/Mid/High/Max)
-    - Auto Optimize
-    - FPS & Memory Monitor
+    - Levels: Low / Mid / High
+    - Auto Optimize (เลือก High ให้เอง)
+    - Real-time FPS & Memory Monitor
     - Notify System
-    - Confirmation Popup
     - Save Settings (writefile/readfile)
-    - Toggle Rendering (ปิด/เปิด 3D Render)
+    ❌ No Maximum Mode
+    ❌ No 3D Rendering Toggle (mouse safe)
 --]]
 
 -- Services
@@ -21,7 +21,7 @@ local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 
 -- Save file path
-local SETTINGS_FILE = "fpsboost_settings.json"
+local SETTINGS_FILE = "Fps_Boost_Settings.json"
 
 -- Save function
 local function saveSettings(data)
@@ -43,11 +43,10 @@ end
 -- Load user settings
 local settingsData = loadSettings()
 local selectedLevel = settingsData.level or "Low"
-local renderEnabled = settingsData.renderEnabled ~= false -- default = true
 
 -- GUI Setup
 local screenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
-screenGui.Name = "FPSBoostProGui"
+screenGui.Name = "FPSBoostGuiLite"
 screenGui.ResetOnSpawn = false
 
 -- Toggle Button
@@ -111,45 +110,9 @@ statusLabel.Font = Enum.Font.GothamBold
 statusLabel.TextSize = 16
 statusLabel.Text = "Status: Waiting..."
 
--- Confirmation Popup
-local confirmFrame = Instance.new("Frame", screenGui)
-confirmFrame.Size = UDim2.new(0, 300, 0, 120)
-confirmFrame.Position = UDim2.new(0.5, -150, 0.5, -60)
-confirmFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-confirmFrame.Visible = false
-confirmFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-local confirmCorner = Instance.new("UICorner", confirmFrame)
-confirmCorner.CornerRadius = UDim.new(0, 10)
-
-local confirmText = Instance.new("TextLabel", confirmFrame)
-confirmText.Size = UDim2.new(1, -20, 0, 60)
-confirmText.Position = UDim2.new(0, 10, 0, 5)
-confirmText.BackgroundTransparency = 1
-confirmText.TextColor3 = Color3.new(1, 1, 1)
-confirmText.TextWrapped = true
-confirmText.Text = "All textures and objects will be removed. Are you sure?"
-confirmText.Font = Enum.Font.Gotham
-confirmText.TextSize = 16
-
-local yesBtn = Instance.new("TextButton", confirmFrame)
-yesBtn.Size = UDim2.new(0.45, -5, 0, 30)
-yesBtn.Position = UDim2.new(0, 10, 1, -40)
-yesBtn.Text = "Yes"
-yesBtn.BackgroundColor3 = Color3.fromRGB(90, 150, 90)
-local yesCorner = Instance.new("UICorner", yesBtn)
-yesCorner.CornerRadius = UDim.new(0, 6)
-
-local noBtn = Instance.new("TextButton", confirmFrame)
-noBtn.Size = UDim2.new(0.45, -5, 0, 30)
-noBtn.Position = UDim2.new(0.55, 0, 1, -40)
-noBtn.Text = "No"
-noBtn.BackgroundColor3 = Color3.fromRGB(150, 70, 70)
-local noCorner = Instance.new("UICorner", noBtn)
-noCorner.CornerRadius = UDim.new(0, 6)
-
 -- Main GUI Frame
 local frame = Instance.new("Frame", screenGui)
-frame.Size = UDim2.new(0, 260, 0, 360)
+frame.Size = UDim2.new(0, 260, 0, 240)
 frame.Position = UDim2.new(0, 20, 0, 100)
 frame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 frame.BorderSizePixel = 0
@@ -170,15 +133,15 @@ end)
 
 -- Title
 local title = Instance.new("TextLabel", frame)
-title.Text = "FPS Boost Pro"
+title.Text = "FPS Boost Lite"
 title.Size = UDim2.new(1, 0, 0, 35)
 title.BackgroundTransparency = 1
 title.TextColor3 = Color3.fromRGB(200, 200, 255)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 20
 
--- Levels
-local levels = {"Low", "Mid", "High", "Maximum"}
+-- Optimization Levels
+local levels = {"Low", "Mid", "High"}
 local buttons = {}
 
 local function clean(obj)
@@ -198,19 +161,15 @@ end
 function updateOptimization()
     for _, obj in ipairs(Workspace:GetDescendants()) do
         if selectedLevel == "Low" then
-            removeIf(obj, obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke") or obj:IsA("Fire") and obj.Lifetime.Max > 2)
+            removeIf(obj, obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke") or obj:IsA("Fire"))
         elseif selectedLevel == "Mid" then
             removeIf(obj, obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Beam") or obj:IsA("SpotLight") or obj:IsA("SurfaceLight") or obj:IsA("PointLight") or obj:IsA("Decal"))
         elseif selectedLevel == "High" then
             removeIf(obj, obj:IsA("Texture") or obj:IsA("Sound") or obj:IsA("ForceField") or obj:IsA("Explosion") or obj:IsA("Sparkles") or obj:IsA("BillboardGui") or obj:IsA("SurfaceGui") or obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke") or obj:IsA("Fire"))
             clean(obj)
-        elseif selectedLevel == "Maximum" then
-            removeIf(obj, not obj:IsA("Camera") and not obj:IsA("Humanoid") and not obj:IsA("HumanoidRootPart") and not obj:IsA("Script") and not obj:IsA("LocalScript") and not obj:IsA("Player") and not obj:IsA("Tool") and not obj:IsA("Backpack") and not obj:IsA("ScreenGui"))
-            removeIf(obj, obj:IsA("Terrain") or obj:IsA("MeshPart") or obj:IsA("UnionOperation") or obj:IsA("Decal") or obj:IsA("Texture"))
-            clean(obj)
         end
     end
-    if selectedLevel == "High" or selectedLevel == "Maximum" then
+    if selectedLevel == "High" then
         Lighting.FogEnd = 250
         Workspace.StreamingEnabled = true
         Workspace.StreamingTargetRadius = 128
@@ -249,70 +208,32 @@ for i, level in ipairs(levels) do
     )
 
     btn.MouseButton1Click:Connect(function()
-        if level == "Maximum" then
-            confirmFrame.Visible = true
-        else
-            selectedLevel = level
-            statusLabel.Text = "Status: Optimizing ("..level..")"
-            pcall(updateOptimization)
-            statusLabel.Text = "Status: Done ("..level..")"
-            notify("Optimization: "..level.." Success!", true)
-            saveSettings({level = selectedLevel, renderEnabled = renderEnabled})
-        end
+        selectedLevel = level
+        statusLabel.Text = "Status: Optimizing ("..level..")"
+        pcall(updateOptimization)
+        statusLabel.Text = "Status: Done ("..level..")"
+        notify("Optimization: "..level.." Success!", true)
+        saveSettings({level = selectedLevel})
     end)
     buttons[level] = btn
 end
-
--- Confirm Buttons
-yesBtn.MouseButton1Click:Connect(function()
-    confirmFrame.Visible = false
-    selectedLevel = "Maximum"
-    statusLabel.Text = "Status: Optimizing (Maximum)"
-    pcall(updateOptimization)
-    statusLabel.Text = "Status: Done (Maximum)"
-    notify("Optimization: Maximum Success!", true)
-    saveSettings({level = selectedLevel, renderEnabled = renderEnabled})
-end)
-
-noBtn.MouseButton1Click:Connect(function()
-    confirmFrame.Visible = false
-end)
 
 -- Auto Optimize Button
 local autoBtn = createButton(
     frame,
     "Auto Optimize",
     UDim2.new(1, -30, 0, 30),
-    UDim2.new(0, 15, 0, 200),
+    UDim2.new(0, 15, 0, 160),
     Color3.fromRGB(150, 60, 60),
     true
 )
 autoBtn.MouseButton1Click:Connect(function()
-    selectedLevel = "Maximum"
+    selectedLevel = "High"
     statusLabel.Text = "Status: Auto Optimizing..."
     pcall(updateOptimization)
     statusLabel.Text = "Status: Done (Auto)"
     notify("Auto Optimize Complete!", true)
-    saveSettings({level = selectedLevel, renderEnabled = renderEnabled})
-end)
-
--- Toggle Rendering Button
-local renderBtn = createButton(
-    frame,
-    renderEnabled and "Toggle Rendering (On)" or "Toggle Rendering (Off)",
-    UDim2.new(1, -30, 0, 30),
-    UDim2.new(0, 15, 0, 240),
-    Color3.fromRGB(80, 80, 150),
-    true
-)
-RunService:Set3dRenderingEnabled(renderEnabled)
-
-renderBtn.MouseButton1Click:Connect(function()
-    renderEnabled = not renderEnabled
-    RunService:Set3dRenderingEnabled(renderEnabled)
-    renderBtn.Text = renderEnabled and "Toggle Rendering (On)" or "Toggle Rendering (Off)"
-    notify("3D Rendering " .. (renderEnabled and "Enabled" or "Disabled"), true)
-    saveSettings({level = selectedLevel, renderEnabled = renderEnabled})
+    saveSettings({level = selectedLevel})
 end)
 
 -- FPS Monitor
@@ -331,6 +252,5 @@ end)
 task.wait(1)
 statusLabel.Text = "Status: Loading Settings..."
 pcall(updateOptimization)
-RunService:Set3dRenderingEnabled(renderEnabled)
 statusLabel.Text = "Status: Ready ("..selectedLevel..")"
 notify("Settings Loaded: "..selectedLevel, true)
