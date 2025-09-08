@@ -66,13 +66,15 @@ local function updateOptimization()
     local settings = LEVEL_SETTINGS[selectedLevel]
     if settings then
         pcall(function()
-            settings().Rendering.QualityLevel = settings.QualityLevel
+            -- แก้ตรงนี้
+            game:SetQualityLevel(settings.QualityLevel.Value) -- ใช้ Value ของ Enum
             Lighting.GlobalShadows = settings.GlobalShadows
             Lighting.FogEnd = settings.FogEnd
             Workspace.StreamingTargetRadius = settings.StreamingTargetRadius
         end)
     end
 end
+
 
 -- GUI Setup
 local screenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
