@@ -1,14 +1,3 @@
---[[
-    FPS Boost GUI (Improved Version with Save System)
-    
-    This script is a refactored and improved version of the FPS Boost GUI,
-    now including a save/load system using writefile/readfile.
-    - The code is more modular and easier to read.
-    - All optimization settings are stored in a configuration table.
-    - UI creation is simplified using helper functions and UIListLayout.
-    - It saves and loads the last selected FPS level to a file.
---]]
-
 -- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
