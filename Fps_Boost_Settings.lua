@@ -5,41 +5,40 @@ local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
 local Stats = game:GetService("Stats")
 local TweenService = game:GetService("TweenService")
-local Rendering = game:GetService("Rendering")
 local LocalPlayer = Players.LocalPlayer
 
 -- Check if the script is running in a local environment
 if not LocalPlayer then
-	warn("FPSBoostGUI: This script should be a LocalScript!")
-	return
+    warn("FPSBoostGUI: This script should be a LocalScript!")
+    return
 end
 
 -- Optimization Levels Configuration
 local LEVEL_SETTINGS = {
-	["Ultra Low"] = {
-		QualityLevel = Enum.QualityLevel.Level01,
-		GlobalShadows = false,
-		FogEnd = 0,
-		StreamingTargetRadius = 32
-	},
-	["Low"] = {
-		QualityLevel = Enum.QualityLevel.Level01,
-		GlobalShadows = false,
-		FogEnd = 1000,
-		StreamingTargetRadius = 64
-	},
-	["Mid"] = {
-		QualityLevel = Enum.QualityLevel.Level03,
-		GlobalShadows = false,
-		FogEnd = 500,
-		StreamingTargetRadius = 96
-	},
-	["High"] = {
-		QualityLevel = Enum.QualityLevel.Level05,
-		GlobalShadows = true,
-		FogEnd = 250,
-		StreamingTargetRadius = 128
-	}
+    ["Ultra Low"] = {
+        QualityLevel = Enum.QualityLevel.Level01,
+        GlobalShadows = false,
+        FogEnd = 0,
+        StreamingTargetRadius = 32
+    },
+    ["Low"] = {
+        QualityLevel = Enum.QualityLevel.Level01,
+        GlobalShadows = false,
+        FogEnd = 1000,
+        StreamingTargetRadius = 64
+    },
+    ["Mid"] = {
+        QualityLevel = Enum.QualityLevel.Level03,
+        GlobalShadows = false,
+        FogEnd = 500,
+        StreamingTargetRadius = 96
+    },
+    ["High"] = {
+        QualityLevel = Enum.QualityLevel.Level05,
+        GlobalShadows = true,
+        FogEnd = 250,
+        StreamingTargetRadius = 128
+    }
 }
 
 -- Default to "Ultra Low" for best performance on startup
@@ -48,60 +47,60 @@ local selectedLevel = "Ultra Low"
 -- === Helper Functions ===
 
 local function notify(message, isSuccess)
-	local notif = Instance.new("TextLabel")
-	notif.Name = "Notification"
-	notif.Text = message
-	notif.Size = UDim2.new(0, 300, 0, 40)
-	notif.Position = UDim2.new(0.5, -150, 0.1, 0)
-	notif.BackgroundColor3 = isSuccess and Color3.fromRGB(30, 150, 50) or Color3.fromRGB(180, 50, 50)
-	notif.BackgroundTransparency = 1
-	notif.TextColor3 = Color3.new(1, 1, 1)
-	notif.Font = Enum.Font.GothamBold
-	notif.TextSize = 18
-	notif.AnchorPoint = Vector2.new(0.5, 0)
-	notif.BorderSizePixel = 0
-	Instance.new("UICorner", notif).CornerRadius = UDim.new(0, 6)
-	notif.Parent = LocalPlayer:WaitForChild("PlayerGui")
+    local notif = Instance.new("TextLabel")
+    notif.Name = "Notification"
+    notif.Text = message
+    notif.Size = UDim2.new(0, 300, 0, 40)
+    notif.Position = UDim2.new(0.5, -150, 0.1, 0)
+    notif.BackgroundColor3 = isSuccess and Color3.fromRGB(30, 150, 50) or Color3.fromRGB(180, 50, 50)
+    notif.BackgroundTransparency = 1
+    notif.TextColor3 = Color3.new(1, 1, 1)
+    notif.Font = Enum.Font.GothamBold
+    notif.TextSize = 18
+    notif.AnchorPoint = Vector2.new(0.5, 0)
+    notif.BorderSizePixel = 0
+    Instance.new("UICorner", notif).CornerRadius = UDim.new(0, 6)
+    notif.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-	local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	
-	TweenService:Create(notif, tweenInfo, {BackgroundTransparency = 0.2}):Play()
+    local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    
+    TweenService:Create(notif, tweenInfo, {BackgroundTransparency = 0.2}):Play()
 
-	task.delay(2, function()
-		TweenService:Create(notif, tweenInfo, {BackgroundTransparency = 1, TextTransparency = 1}):Play()
-		task.wait(0.3)
-		notif:Destroy()
-	end)
+    task.delay(2, function()
+        TweenService:Create(notif, tweenInfo, {BackgroundTransparency = 1, TextTransparency = 1}):Play()
+        task.wait(0.3)
+        notif:Destroy()
+    end)
 end
 
 local function updateOptimization()
-	local settings = LEVEL_SETTINGS[selectedLevel]
-	if not settings then
-		warn("FPSBoostGUI: Invalid optimization level selected:", selectedLevel)
-		return
-	end
+    local settings = LEVEL_SETTINGS[selectedLevel]
+    if not settings then
+        warn("FPSBoostGUI: Invalid optimization level selected:", selectedLevel)
+        return
+    end
 
-	pcall(function()
-		Rendering.QualityLevel = settings.QualityLevel
-		Lighting.GlobalShadows = settings.GlobalShadows
-		Lighting.FogEnd = settings.FogEnd
-		Workspace.StreamingTargetRadius = settings.StreamingTargetRadius
-	end)
+    pcall(function()
+        settings().Rendering.QualityLevel = settings.QualityLevel
+        Lighting.GlobalShadows = settings.GlobalShadows
+        Lighting.FogEnd = settings.FogEnd
+        Workspace.StreamingTargetRadius = settings.StreamingTargetRadius
+    end)
 end
 
 local function createButton(parent, text, color, bold)
-	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(1, 0, 0, 30)
-	btn.Text = text
-	btn.BackgroundColor3 = color
-	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.Font = bold and Enum.Font.GothamBold or Enum.Font.Gotham
-	btn.TextSize = 16
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 6)
-	corner.Parent = btn
-	btn.Parent = parent
-	return btn
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 30)
+    btn.Text = text
+    btn.BackgroundColor3 = color
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = bold and Enum.Font.GothamBold or Enum.Font.Gotham
+    btn.TextSize = 16
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = btn
+    btn.Parent = parent
+    return btn
 end
 
 -- === Main GUI Elements ===
@@ -150,9 +149,9 @@ toggleCorner.CornerRadius = UDim.new(0, 8)
 
 local uiVisible = false
 toggleButton.MouseButton1Click:Connect(function()
-	uiVisible = not uiVisible
-	frame.Visible = uiVisible
-	toggleButton.Text = uiVisible and "Hide FPS Boost UI" or "Show FPS Boost UI"
+    uiVisible = not uiVisible
+    frame.Visible = uiVisible
+    toggleButton.Text = uiVisible and "Hide FPS Boost UI" or "Show FPS Boost UI"
 end)
 
 local title = Instance.new("TextLabel")
@@ -187,27 +186,27 @@ listLayout.Padding = UDim.new(0, 5)
 listLayout.Parent = buttonContainer
 
 for level, _ in pairs(LEVEL_SETTINGS) do
-	local btn = createButton(buttonContainer, level, Color3.fromRGB(60, 60, 70), false)
-	btn.Name = level .. "Button"
+    local btn = createButton(buttonContainer, level, Color3.fromRGB(60, 60, 70), false)
+    btn.Name = level .. "Button"
 
-	btn.MouseButton1Click:Connect(function()
-		selectedLevel = level
-		statusLabel.Text = "Status: Optimizing (" .. level .. ")"
-		updateOptimization()
-		notify("Optimization: " .. level .. " Success!", true)
-		statusLabel.Text = "Status: Ready (" .. selectedLevel .. ")"
-	end)
+    btn.MouseButton1Click:Connect(function()
+        selectedLevel = level
+        statusLabel.Text = "Status: Optimizing (" .. level .. ")"
+        updateOptimization()
+        notify("Optimization: " .. level .. " Success!", true)
+        statusLabel.Text = "Status: Ready (" .. selectedLevel .. ")"
+    end)
 end
 
 local fps, frames = 0, 0
 RunService.RenderStepped:Connect(function(dt)
-	frames = frames + 1
-	fps = fps + dt
-	if fps >= 1 then
-		local memUsage = Stats:GetTotalMemoryUsageMb()
-		fpsLabel.Text = string.format("FPS: %d | Mem: %.2fMB", math.floor(frames / fps), memUsage)
-		fps, frames = 0, 0
-	end
+    frames = frames + 1
+    fps = fps + dt
+    if fps >= 1 then
+        local memUsage = Stats:GetTotalMemoryUsageMb()
+        fpsLabel.Text = string.format("FPS: %d | Mem: %.2fMB", math.floor(frames / fps), memUsage)
+        fps, frames = 0, 0
+    end
 end)
 
 task.wait(1)
