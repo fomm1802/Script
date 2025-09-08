@@ -1,11 +1,12 @@
 --[[ 
-    FPS Boost GUI (Improved Version)
+    FPS Boost GUI (Improved Version with Save System)
     
-    This script is a refactored and improved version of the FPS Boost GUI.
+    This script is a refactored and improved version of the FPS Boost GUI,
+    now including a save/load system using writefile/readfile.
     - The code is more modular and easier to read.
     - All optimization settings are stored in a configuration table.
     - UI creation is simplified using helper functions and UIListLayout.
-    - It is compatible with standard Roblox environments.
+    - It saves and loads the last selected FPS level to a file.
 --]]
 
 -- Services
@@ -15,6 +16,7 @@ local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
 local Stats = game:GetService("Stats")
 local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -23,6 +25,9 @@ if not LocalPlayer then
     warn("FPSBoostGUI: This script should be a LocalScript!")
     return
 end
+
+-- Save file path
+local SETTINGS_FILE = "Fps_Boost_Settings.json"
 
 -- Optimization Levels Configuration
 -- This table stores all the settings for each optimization level.
@@ -48,8 +53,33 @@ local LEVEL_SETTINGS = {
     }
 }
 
--- Default to "Low" if no settings are saved
-local selectedLevel = "Low"
+-- === Save/Load Functions ===
+
+-- Function to save settings to a file
+local function saveSettings(data)
+    local encoded = HttpService:JSONEncode(data)
+    if writefile then
+        pcall(writefile, SETTINGS_FILE, encoded)
+        return true
+    end
+    return false
+end
+
+-- Function to load settings from a file
+local function loadSettings()
+    if isfile and readfile and isfile(SETTINGS_FILE) then
+        local success, rawData = pcall(readfile, SETTINGS_FILE)
+        if success then
+            local decoded = HttpService:JSONDecode(rawData)
+            return decoded
+        end
+    end
+    return {}
+end
+
+-- Load user settings on startup
+local settingsData = loadSettings()
+local selectedLevel = settingsData.level or "Low"
 
 -- GUI Setup
 local playerGui = LocalPlayer:WaitForChild("PlayerGui")
@@ -98,7 +128,6 @@ local function updateOptimization()
         return
     end
 
-    -- Use pcall to safely apply settings, in case any property fails to set
     pcall(function()
         settings().Rendering.QualityLevel = settings.QualityLevel
         Lighting.GlobalShadows = settings.GlobalShadows
@@ -153,6 +182,25 @@ frame.BackgroundTransparency = 0.05
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 frame.Parent = screenGui
 
+-- Toggle Button
+local toggleButton = Instance.new("TextButton", screenGui)
+toggleButton.Size = UDim2.new(0, 140, 0, 32)
+toggleButton.Position = UDim2.new(0, 20, 0, 20)
+toggleButton.Text = "Show FPS Boost UI"
+toggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 90)
+toggleButton.TextColor3 = Color3.new(1, 1, 1)
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.TextSize = 14
+local toggleCorner = Instance.new("UICorner", toggleButton)
+toggleCorner.CornerRadius = UDim.new(0, 8)
+
+local uiVisible = false
+toggleButton.MouseButton1Click:Connect(function()
+    uiVisible = not uiVisible
+    frame.Visible = uiVisible
+    toggleButton.Text = uiVisible and "Hide FPS Boost UI" or "Show FPS Boost UI"
+end)
+
 -- Title
 local title = Instance.new("TextLabel")
 title.Text = "FPS Boost Lite"
@@ -199,6 +247,7 @@ for level, _ in pairs(LEVEL_SETTINGS) do
         selectedLevel = level
         statusLabel.Text = "Status: Optimizing ("..level..")"
         updateOptimization()
+        saveSettings({level = selectedLevel})
         notify("Optimization: "..level.." Success!", true)
         statusLabel.Text = "Status: Ready ("..selectedLevel..")"
     end)
@@ -216,6 +265,7 @@ autoBtn.MouseButton1Click:Connect(function()
     selectedLevel = "High"
     statusLabel.Text = "Status: Auto Optimizing..."
     updateOptimization()
+    saveSettings({level = selectedLevel})
     notify("Auto Optimize Complete!", true)
     statusLabel.Text = "Status: Ready (Auto)"
 end)
@@ -232,7 +282,9 @@ RunService.RenderStepped:Connect(function(dt)
     end
 end)
 
--- Initial state update
+-- Apply saved settings on start
+task.wait(1)
+statusLabel.Text = "Status: Loading Settings..."
 updateOptimization()
+notify("Settings Loaded: "..selectedLevel.."!", true)
 statusLabel.Text = "Status: Ready ("..selectedLevel..")"
-notify("GUI Loaded Successfully!", true)
