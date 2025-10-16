@@ -28,9 +28,8 @@ local SETTINGS = {
 
 --==[ HOP CONFIG ]==--
 local HOP = {
-	Enabled = true,          -- true = hop หลังเก็บครบ
-	DelayBeforeHop = 3,      -- หน่วงเวลาก่อน hop (วินาที)
-	AutoHopEvery = 5,      -- hop เองทุกกี่วินาที (0 = ปิด)
+	Enabled = true,          -- ให้ hop ไหม
+	DelayBeforeHop = 2,      -- รอกี่วินาทีหลังเก็บครบก่อน hop
 }
 --=========================
 
@@ -121,7 +120,7 @@ local function upAndStand()
 	end
 end
 
---== Hop system (สุ่มเซิร์ฟใหม่) ==--
+--== Hop ==--
 local function listServers(cursor)
 	local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
 	if cursor then url = url .. "&cursor=" .. cursor end
@@ -131,11 +130,11 @@ local function listServers(cursor)
 	end)
 	if not ok then return nil end
 
-	local ok2, decoded = pcall(function()
+	local ok2, data = pcall(function()
 		return HttpService:JSONDecode(res)
 	end)
 	if not ok2 then return nil end
-	return decoded
+	return data
 end
 
 local function hopServer()
@@ -172,6 +171,14 @@ if SETTINGS.HideCharacter then
 end
 
 local yuts = getYuts()
+
+-- ถ้าไม่พบ Yut → Hop เลย
+if #yuts == 0 then
+	warn("❌ ไม่พบ Yut ในโฟลเดอร์ — กำลัง Hop ไปเซิร์ฟใหม่...")
+	hopServer()
+	return
+end
+
 for i, y in ipairs(yuts) do
 	moveToYut(y, i, #yuts)
 end
@@ -180,23 +187,10 @@ if SETTINGS.RestoreVisibility and not wasVisible then
 	setVisible(true)
 end
 
-if #yuts > 0 then
-	print("🚀 เก็บครบ! วาปขึ้นฟ้า...")
-	upAndStand()
-	print("🧱 ยืนบนฟ้าเสร็จ — เตรียม Hop!")
-	if HOP.Enabled then
-		task.wait(HOP.DelayBeforeHop)
-		hopServer()
-	end
-else
-	warn("❌ ไม่พบ Yut ในโฟลเดอร์")
-end
+print("🚀 เก็บครบ! วาปขึ้นฟ้า...")
+upAndStand()
 
---== Auto Hop ทุก X วินาที ==--
-if HOP.AutoHopEvery > 0 then
-	task.spawn(function()
-		while task.wait(HOP.AutoHopEvery) do
-			hopServer()
-		end
-	end)
+if HOP.Enabled then
+	task.wait(HOP.DelayBeforeHop)
+	hopServer()
 end
