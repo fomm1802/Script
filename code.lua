@@ -4,7 +4,7 @@ local SETTINGS = {
 	YutClass = "BasePart",
 	CollectOrder = "nearest",              -- "nearest" | "original"
 
-	CollectSpeed = 50,                    -- ความเร็ววิ่งไปเก็บ (studs/วินาที)
+	CollectSpeed = 100,                    -- ความเร็ววิ่งไปเก็บ (studs/วินาที)
 	EaseStyle = Enum.EasingStyle.Quad,
 	EaseDir = Enum.EasingDirection.Out,
 	YutYOffset = -2,
