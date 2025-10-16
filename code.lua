@@ -1,6 +1,6 @@
 --==[ CONFIG ]==--
 local SETTINGS = {
-	CollectSpeed = 1.2,
+	CollectSpeed = 2,
 	UpSpeed = 2,
 	HideCharacter = true,
 	YutYOffset = -2,
