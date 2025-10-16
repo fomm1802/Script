@@ -4,7 +4,7 @@ local SETTINGS = {
 	YutClass = "BasePart",
 	CollectOrder = "nearest",               -- "nearest" | "original"
 
-	CollectSpeed = 100,                      -- ความเร็วเคลื่อนที่ (studs/วินาที)
+	CollectSpeed = 100,                     -- ความเร็วเคลื่อนที่ (studs/วินาที)
 	EaseStyle = Enum.EasingStyle.Quad,
 	EaseDir = Enum.EasingDirection.Out,
 	YutYOffset = -5,
@@ -26,34 +26,18 @@ local SETTINGS = {
 	RestoreVisibility = true,
 }
 
---==[ HOP หลังเก็บครบ ]==--
+--==[ HOP CONFIG ]==--
 local HOP = {
-local TeleportService = game:GetService("TeleportService")
-local HttpService = game:GetService("HttpService")
-
-local Servers = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
-local Server, Next = nil, nil
-local function ListServers(cursor)
-    local Raw = game:HttpGet(Servers .. ((cursor and "&cursor=" .. cursor) or ""))
-    return HttpService:JSONDecode(Raw)
-end
-
-repeat
-    local Servers = ListServers(Next)
-    Server = Servers.data[math.random(1, (#Servers.data / 3))]
-    Next = Servers.nextPageCursor
-until Server
-
-if Server.playing < Server.maxPlayers and Server.id ~= game.JobId then
-    TeleportService:TeleportToPlaceInstance(game.PlaceId, Server.id, game.Players.LocalPlayer)
-end
-
+	Enabled = true,          -- true = hop หลังเก็บครบ
+	DelayBeforeHop = 3,      -- หน่วงเวลาก่อน hop (วินาที)
+	AutoHopEvery = 5,      -- hop เองทุกกี่วินาที (0 = ปิด)
 }
 --=========================
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
@@ -137,43 +121,46 @@ local function upAndStand()
 	end
 end
 
---== HOP ==
-local function doHop()
-	if RunService:IsStudio() then
-		warn("⚠️ Studio ไม่เทเลพอร์ต")
-		return
-	end
+--== Hop system (สุ่มเซิร์ฟใหม่) ==--
+local function listServers(cursor)
+	local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
+	if cursor then url = url .. "&cursor=" .. cursor end
 
-	print("🌍 เตรียม Hop ไป Place:", HOP.TargetPlaceId)
+	local ok, res = pcall(function()
+		return game:HttpGet(url)
+	end)
+	if not ok then return nil end
 
-	local ok, err = pcall(function()
-		if HOP.TargetPlaceId == game.PlaceId then
-			-- ไป place เดิม (client call ได้)
-			TeleportService:TeleportAsync(game.PlaceId, {player})
-		else
-			-- ไปคนละ place → ใช้ trick: TeleportToPlaceInstance
-			local servers = TeleportService:GetPlayerPlaceInstanceAsync(HOP.TargetPlaceId)
-			local targetServer = nil
+	local ok2, decoded = pcall(function()
+		return HttpService:JSONDecode(res)
+	end)
+	if not ok2 then return nil end
+	return decoded
+end
 
-			for _, info in pairs(servers) do
-				if info and info.AccessCode then
-					targetServer = info.AccessCode
-					break
-				end
-			end
+local function hopServer()
+	print("🌍 กำลังหาเซิร์ฟใหม่...")
+	local nextCursor, chosen = nil, nil
 
-			if targetServer then
-				TeleportService:TeleportToPlaceInstance(HOP.TargetPlaceId, targetServer, player)
-			else
-				TeleportService:Teleport(HOP.TargetPlaceId, player)
+	repeat
+		local data = listServers(nextCursor)
+		if not data then break end
+
+		for _, srv in ipairs(data.data) do
+			if srv.id ~= game.JobId and srv.playing < srv.maxPlayers then
+				chosen = srv
+				break
 			end
 		end
-	end)
 
-	if not ok then
-		warn("❌ Hop ล้มเหลว:", err)
+		nextCursor = data.nextPageCursor
+	until chosen or not nextCursor
+
+	if chosen then
+		print(("🛰 Hop ไปเซิร์ฟใหม่ (%d/%d players)"):format(chosen.playing, chosen.maxPlayers))
+		TeleportService:TeleportToPlaceInstance(game.PlaceId, chosen.id, player)
 	else
-		print("✅ Hop เรียบร้อย")
+		warn("❌ ไม่พบเซิร์ฟที่ว่าง")
 	end
 end
 
@@ -197,7 +184,19 @@ if #yuts > 0 then
 	print("🚀 เก็บครบ! วาปขึ้นฟ้า...")
 	upAndStand()
 	print("🧱 ยืนบนฟ้าเสร็จ — เตรียม Hop!")
-	doHop()
+	if HOP.Enabled then
+		task.wait(HOP.DelayBeforeHop)
+		hopServer()
+	end
 else
 	warn("❌ ไม่พบ Yut ในโฟลเดอร์")
+end
+
+--== Auto Hop ทุก X วินาที ==--
+if HOP.AutoHopEvery > 0 then
+	task.spawn(function()
+		while task.wait(HOP.AutoHopEvery) do
+			hopServer()
+		end
+	end)
 end
