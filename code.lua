@@ -1,10 +1,10 @@
 --==[ CONFIG ]==--
 local SETTINGS = {
-	FolderPath = workspace.Platform.Plat,  -- โฟลเดอร์ที่มี Yut
+	FolderPath = workspace.Platform.Plat,   -- โฟลเดอร์ที่มี Yut
 	YutClass = "BasePart",
-	CollectOrder = "nearest",              -- "nearest" | "original"
+	CollectOrder = "nearest",               -- "nearest" | "original"
 
-	CollectSpeed = 100,                     -- ความเร็วเคลื่อนที่ (studs/วินาที)
+	CollectSpeed = 150,                      -- ความเร็วเคลื่อนที่ (studs/วินาที)
 	EaseStyle = Enum.EasingStyle.Quad,
 	EaseDir = Enum.EasingDirection.Out,
 	YutYOffset = -2,
@@ -35,7 +35,7 @@ local HOP = {
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TeleportService = game:GetService("TeleportService")
 local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
@@ -99,7 +99,6 @@ local function createPlatform(at)
 	p.Material = SETTINGS.PlatformMaterial
 	p.Anchored = true
 	p.CanCollide = true
-	p.CustomPhysicalProperties = PhysicalProperties.new(1, 0.3, 0.5)
 	p.CFrame = CFrame.new(at - Vector3.new(0, SETTINGS.PlatformSize.Y/2, 0))
 	p.Parent = workspace
 	return p
@@ -115,27 +114,49 @@ local function upAndStand()
 		local pf = createPlatform(upPos)
 		local standY = SETTINGS.PlatformSize.Y/2 + humanoid.HipHeight + SETTINGS.StandPadding
 		hrp.CFrame = CFrame.new(pf.Position + Vector3.new(0, standY, 0))
-		if humanoid:GetState() == Enum.HumanoidStateType.Physics then
-			humanoid:ChangeState(Enum.HumanoidStateType.Landed)
-		end
 	else
 		hrp.Anchored = true
 	end
 end
 
---== HOP (ผ่าน ServerScript) ==--
+--== HOP ==
 local function doHop()
-	local remote = ReplicatedStorage:FindFirstChild("HopRemote")
-	if not remote then
-		warn("⚠️ ไม่มี HopRemote ใน ReplicatedStorage")
+	if RunService:IsStudio() then
+		warn("⚠️ Studio ไม่เทเลพอร์ต")
 		return
 	end
-	print("🌍 ขอให้เซิร์ฟ Hop ไป Place:", HOP.TargetPlaceId)
-	remote:FireServer({
-		targetPlaceId = HOP.TargetPlaceId,
-		hopAll = false,
-		data = HOP.Data,
-	})
+
+	print("🌍 เตรียม Hop ไป Place:", HOP.TargetPlaceId)
+
+	local ok, err = pcall(function()
+		if HOP.TargetPlaceId == game.PlaceId then
+			-- ไป place เดิม (client call ได้)
+			TeleportService:TeleportAsync(game.PlaceId, {player})
+		else
+			-- ไปคนละ place → ใช้ trick: TeleportToPlaceInstance
+			local servers = TeleportService:GetPlayerPlaceInstanceAsync(HOP.TargetPlaceId)
+			local targetServer = nil
+
+			for _, info in pairs(servers) do
+				if info and info.AccessCode then
+					targetServer = info.AccessCode
+					break
+				end
+			end
+
+			if targetServer then
+				TeleportService:TeleportToPlaceInstance(HOP.TargetPlaceId, targetServer, player)
+			else
+				TeleportService:Teleport(HOP.TargetPlaceId, player)
+			end
+		end
+	end)
+
+	if not ok then
+		warn("❌ Hop ล้มเหลว:", err)
+	else
+		print("✅ Hop เรียบร้อย")
+	end
 end
 
 --== Main ==--
@@ -157,8 +178,8 @@ end
 if #yuts > 0 then
 	print("🚀 เก็บครบ! วาปขึ้นฟ้า...")
 	upAndStand()
-	print("🧱 ยืนบนฟ้าเสร็จ — เตรียม Hop ไป PlaceId:", HOP.TargetPlaceId)
+	print("🧱 ยืนบนฟ้าเสร็จ — เตรียม Hop!")
 	doHop()
 else
-	warn("❌ ไม่พบ Yut ในโฟลเดอร์ที่ตั้งค่าไว้")
+	warn("❌ ไม่พบ Yut ในโฟลเดอร์")
 end
