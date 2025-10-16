@@ -1,7 +1,7 @@
 --==[ CONFIG ส่วนนี้ปรับได้เลย ไม่ต้องไปรื้อข้างล่าง ]==--
 local SETTINGS = {
 	CollectSpeed = 0.1,         -- ความเร็วตอน Tween เก็บ Yut
-	UpSpeed = 2,              -- ความเร็วตอนวาปขึ้นฟ้า
+	UpSpeed = 2,                -- ความเร็วตอนวาปขึ้นฟ้า
 	HideCharacter = true,       -- จะให้ซ่อนตัวไหม (true/false)
 	YutYOffset = -2,            -- ระยะต่ำกว่าตัว Yut ตอน Tween ไปหา
 	TeleportHeight = 500,       -- ความสูงที่จะวาปขึ้นฟ้า
@@ -13,6 +13,7 @@ local TweenService = game:GetService("TweenService")
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
+local humanoid = char:WaitForChild("Humanoid")
 
 -- ดึง Yut ทั้งหมด
 local yuts = SETTINGS.FolderPath:GetChildren()
@@ -43,7 +44,7 @@ local function moveToYut(yut)
 	print("เก็บแล้ว: " .. collected .. "/" .. totalYut)
 end
 
--- ฟังก์ชันวาปขึ้นฟ้า
+-- ฟังก์ชันวาปขึ้นฟ้า + ลอยค้าง
 local function teleportUp()
 	print("✅ เก็บครบ! วาปขึ้นฟ้า~ 🚀")
 
@@ -52,6 +53,13 @@ local function teleportUp()
 	local tween = TweenService:Create(hrp, tweenInfo, {CFrame = CFrame.new(upPos)})
 
 	tween:Play()
+	tween.Completed:Wait()
+
+	-- 🔥 ลอยค้าง (หยุดแรงโน้มถ่วงและล็อกตำแหน่ง)
+	humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+	hrp.Anchored = true
+
+	print("🪶 ลอยค้างบนฟ้าเรียบร้อย~")
 end
 
 -- เริ่มทำงาน
