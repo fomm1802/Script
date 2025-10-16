@@ -1,88 +1,182 @@
 --==[ CONFIG ]==--
 local SETTINGS = {
-	CollectSpeed = 50,           -- ความเร็วเคลื่อนที่ (studs/วินาที)
-	UpSpeed = 2,                  -- ความเร็วตอนวาปขึ้นฟ้า (วินาที)
-	HideCharacter = true,
-	YutYOffset = -2,
-	TeleportHeight = 500,
-	PlatformSize = Vector3.new(20, 1, 20),
-	PlatformColor = Color3.fromRGB(255, 200, 100),
-	FolderPath = workspace.Platform.Plat,
-}
---================--
+	FolderPath = workspace.Platform.Plat,  -- โฟลเดอร์ที่มี Yut
+	YutClass = "BasePart",
+	CollectOrder = "nearest",              -- "nearest" | "original"
 
+	CollectSpeed = 50,                    -- ความเร็ววิ่งไปเก็บ (studs/วินาที)
+	EaseStyle = Enum.EasingStyle.Quad,
+	EaseDir = Enum.EasingDirection.Out,
+	YutYOffset = -2,
+
+	-- ขึ้นฟ้า (เวลาใช้เป็น "วินาที" ตรงๆ ตาม Tween)
+	TeleportHeight = 500,
+	UpTime = 2,
+	UpEaseStyle = Enum.EasingStyle.Sine,
+	UpEaseDir = Enum.EasingDirection.Out,
+
+	-- ทำพื้น (ถ้าอยากลอยค้าง set เป็น false)
+	MakePlatform = true,
+	PlatformSize = Vector3.new(22, 2, 22),
+	PlatformColor = Color3.fromRGB(255,200,100),
+	PlatformMaterial = Enum.Material.Neon,
+	StandPadding = 0.5,                    -- กันทะลุ (เพิ่มจาก HipHeight)
+
+	HideCharacter = true,
+	RestoreVisibility = true,
+}
+
+--==[ HOP หลังเก็บครบ ]==--
+-- Mode: "off" | "public" | "reserved"
+-- public: เทเลพอร์ตตัวเองไป public เซิร์ฟของ place เป้าหมาย
+-- reserved: ให้เซิร์ฟเวอร์สร้างห้องแล้วพาไป (ต้องมี ServerScript ด้านล่าง)
+local HOP = {
+	Mode = "public",
+	TargetPlaceId = game.PlaceId,
+	MaxRetries = 3,
+	RetryDelay = 2,
+	HopAllPlayers = false,  -- เฉพาะโหมดที่เซิร์ฟทำ (publicAll/reserved)
+	Data = { from = "YutCollector", ts = os.time() },
+}
+--=========================
+
+local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local player = game.Players.LocalPlayer
+local TeleportService = game:GetService("TeleportService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Debris = game:GetService("Debris")
+
+local player = Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
 local humanoid = char:WaitForChild("Humanoid")
 
-local yuts = SETTINGS.FolderPath:GetChildren()
-local totalYut = #yuts
-local collected = 0
-
-local function hideCharacter()
-	if not SETTINGS.HideCharacter then return end
-	for _, part in ipairs(char:GetDescendants()) do
-		if part:IsA("BasePart") then
-			part.Transparency = 1
-		end
+--== Utils ==
+local function tween(i, info, props)
+	local t = TweenService:Create(i, info, props); t:Play(); t.Completed:Wait(); return t
+end
+local function setVisible(on)
+	for _, d in ipairs(char:GetDescendants()) do
+		if d:IsA("BasePart") then d.LocalTransparencyModifier = on and 0 or 1 end
 	end
 end
-
--- ✅ ใช้ “ความเร็ว” แทน “เวลา”
-local function moveToYut(yut)
-	local targetPos = yut.Position + Vector3.new(0, SETTINGS.YutYOffset, 0)
-	local distance = (targetPos - hrp.Position).Magnitude
-	local time = distance / SETTINGS.CollectSpeed  -- ⬅️ ระยะ ÷ ความเร็ว
-
-	local tweenInfo = TweenInfo.new(time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	local tween = TweenService:Create(hrp, tweenInfo, {CFrame = CFrame.new(targetPos)})
-
-	tween:Play()
-	tween.Completed:Wait()
-
-	yut:Destroy()
-	collected += 1
-	print(string.format("เก็บแล้ว: %d/%d (ระยะ %.1f studs ใช้เวลา %.2fs)", collected, totalYut, distance, time))
+local function zeroVel()
+	hrp.AssemblyLinearVelocity = Vector3.zero
+	hrp.AssemblyAngularVelocity = Vector3.zero
 end
 
-local function createPlatform(pos)
+local function getYuts()
+	local arr = {}
+	for _, o in ipairs(SETTINGS.FolderPath:GetChildren()) do
+		if o:IsA(SETTINGS.YutClass) then table.insert(arr, o) end
+	end
+	if SETTINGS.CollectOrder == "nearest" then
+		table.sort(arr, function(a,b)
+			return (a.Position - hrp.Position).Magnitude < (b.Position - hrp.Position).Magnitude
+		end)
+	end
+	return arr
+end
+
+--== เคลื่อนที่ด้วย "ความเร็วจริง" ==--
+local function moveToYut(yut, idx, total)
+	if not yut or not yut.Parent then return end
+	local target = yut.Position + Vector3.new(0, SETTINGS.YutYOffset, 0)
+	local distance = (target - hrp.Position).Magnitude
+	local time = math.max(distance / math.max(SETTINGS.CollectSpeed, 1), 0.02)
+
+	local info = TweenInfo.new(time, SETTINGS.EaseStyle, SETTINGS.EaseDir)
+	tween(hrp, info, {CFrame = CFrame.new(target)})
+
+	if yut and yut.Parent then yut:Destroy() end
+	print(string.format("เก็บแล้ว %d/%d | ระยะ %.1f studs | %.2fs", idx, total, distance, time))
+end
+
+--== ทำพื้นยืน ==
+local function createPlatform(at)
 	local p = Instance.new("Part")
-	p.Anchored = true
 	p.Size = SETTINGS.PlatformSize
 	p.Color = SETTINGS.PlatformColor
-	p.Material = Enum.Material.Neon
-	p.CFrame = CFrame.new(pos - Vector3.new(0, SETTINGS.PlatformSize.Y/2, 0))
+	p.Material = SETTINGS.PlatformMaterial
+	p.Anchored = true
+	p.CanCollide = true
+	p.Name = "SkyPlatform"
+	p.CFrame = CFrame.new(at - Vector3.new(0, SETTINGS.PlatformSize.Y/2, 0))
 	p.Parent = workspace
 	return p
 end
 
-local function teleportUp()
-	print("✅ เก็บครบ! วาปขึ้นฟ้า~ 🚀")
-
+local function upAndStand()
 	local upPos = hrp.Position + Vector3.new(0, SETTINGS.TeleportHeight, 0)
-	local tweenInfo = TweenInfo.new(SETTINGS.UpSpeed, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
-	local tween = TweenService:Create(hrp, tweenInfo, {CFrame = CFrame.new(upPos)})
+	local info = TweenInfo.new(SETTINGS.UpTime, SETTINGS.UpEaseStyle, SETTINGS.UpEaseDir)
+	tween(hrp, info, {CFrame = CFrame.new(upPos)})
 
-	tween:Play()
-	tween.Completed:Wait()
+	zeroVel()
 
-	local platform = createPlatform(upPos)
-	local standY = SETTINGS.PlatformSize.Y / 2 + humanoid.HipHeight + 0.5
-	hrp.CFrame = CFrame.new(platform.Position + Vector3.new(0, standY, 0))
-
-	humanoid:ChangeState(Enum.HumanoidStateType.Landed)
-	print("🧱 สร้างพื้นและยืนได้เรียบร้อย!")
-end
-
-hideCharacter()
-for _, yut in ipairs(yuts) do
-	if yut:IsA("BasePart") then
-		moveToYut(yut)
+	if SETTINGS.MakePlatform then
+		local pf = createPlatform(upPos)
+		local standY = SETTINGS.PlatformSize.Y/2 + humanoid.HipHeight + SETTINGS.StandPadding
+		hrp.CFrame = CFrame.new(pf.Position + Vector3.new(0, standY, 0))
+		if humanoid:GetState() == Enum.HumanoidStateType.Physics then
+			humanoid:ChangeState(Enum.HumanoidStateType.Landed)
+		end
+		hrp.Anchored = false
+	else
+		humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+		hrp.Anchored = true
 	end
 end
 
-if collected == totalYut then
-	teleportUp()
+--== HOP ==
+local function hop_public_self()
+	local opts = Instance.new("TeleportOptions"); opts:SetTeleportData(HOP.Data)
+	TeleportService:TeleportAsync(HOP.TargetPlaceId, {player}, opts)
+end
+local function getRemote()
+	local r = ReplicatedStorage:FindFirstChild("HopRemote")
+	if not r then r = ReplicatedStorage:WaitForChild("HopRemote", 5) end
+	return r
+end
+local function hop_via_server(mode)
+	local r = getRemote(); if not r then warn("ไม่มี HopRemote"); return end
+	r:FireServer({
+		mode = mode, -- "reserved" | "publicAll"
+		targetPlaceId = HOP.TargetPlaceId,
+		hopAll = HOP.HopAllPlayers,
+		data = HOP.Data,
+	})
+end
+local function doHop()
+	if HOP.Mode == "off" then return end
+	if RunService:IsStudio() then warn("Studio ไม่เทเลพอร์ต"); return end
+
+	for i=1, HOP.MaxRetries do
+		local ok, err = pcall(function()
+			if HOP.Mode == "public" and not HOP.HopAllPlayers then
+				hop_public_self()
+			elseif HOP.Mode == "public" and HOP.HopAllPlayers then
+				hop_via_server("publicAll")
+			elseif HOP.Mode == "reserved" then
+				hop_via_server("reserved")
+			end
+		end)
+		if ok then print("[HOP] start"); return else warn("[HOP] fail", i, err); task.wait(HOP.RetryDelay) end
+	end
+end
+
+--== Main ==
+local wasVisible = true
+if SETTINGS.HideCharacter then wasVisible = false; setVisible(false) end
+
+local yuts = getYuts()
+for i, y in ipairs(yuts) do moveToYut(y, i, #yuts) end
+
+if SETTINGS.RestoreVisibility and not wasVisible then setVisible(true) end
+
+if #yuts > 0 then
+	print("✅ เก็บครบ! ขึ้นฟ้า…"); upAndStand(); print("🧱 เสร็จ — hop!")
+	doHop()
+else
+	warn("ไม่พบ Yut ในโฟลเดอร์")
 end
