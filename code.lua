@@ -7,7 +7,7 @@ local SETTINGS = {
 	CollectSpeed = 100,                      -- ความเร็วเคลื่อนที่ (studs/วินาที)
 	EaseStyle = Enum.EasingStyle.Quad,
 	EaseDir = Enum.EasingDirection.Out,
-	YutYOffset = -4,
+	YutYOffset = -5,
 
 	-- ขึ้นฟ้า
 	TeleportHeight = 500,
