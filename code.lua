@@ -5,7 +5,7 @@ local SETTINGS = {
 	YutClass = "BasePart",       -- กรองชนิด (BasePart เท่านั้น)
 	CollectOrder = "nearest",    -- "nearest" | "original"
 
-	CollectSpeed = 0.12,         -- เวลาทำ Tween ไปเก็บต่อชิ้น
+	CollectSpeed = 2,         -- เวลาทำ Tween ไปเก็บต่อชิ้น
 	CollectEaseStyle = Enum.EasingStyle.Quad,
 	CollectEaseDir = Enum.EasingDirection.Out,
 	YutYOffset = -2,             -- ต่ำกว่าจุด Yut นิดหน่อย กันชนค้าง
