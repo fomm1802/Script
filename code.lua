@@ -12,47 +12,48 @@ local SettingsTab = Window:CreateTab("Settings")
 local GeneralSection = MainTab:CreateSection("Test Stuff")
 local SettingsSection = SettingsTab:CreateSection("Test Stuff")
 
--- >>> เพิ่มตัวแปรสถานะสำหรับ Toggle
+-- ====== สถานะ Auto Gacha (ปิดเป็นค่าเริ่มต้น) ======
 local autoGacha = false
 
--- Toggle จาก UI ของคุณ
+-- Toggle ควบคุม Auto Gacha
 local Toggle = GeneralSection:CreateToggle({
     Name = "Auto Gacha",
-    Default = false,
+    Default = false, -- เริ่มปิด
     Callback = function(Value)
-        -- >>> เก็บค่าที่ Toggle เปลี่ยนลงตัวแปรสถานะ
         autoGacha = Value
         print("Auto Gacha:", Value)
     end
 })
 
--- รันลูปแบบแยก thread เพื่อไม่ให้ค้าง UI
+-- (สำคัญ) ย้ำให้เริ่มปิดเสมอ แม้บาง lib จะเรียก Callback ตอนสร้างหรือไม่ก็ตาม
+Toggle:Set(false)
+autoGacha = false
+
+-- ลูปรันแยก ไม่บล็อก UI
 task.spawn(function()
     while true do
         if autoGacha then
-            local args = { "x10" }
-            workspace:WaitForChild("Containers")
-                :WaitForChild("CoinGachaContainer")
-                :WaitForChild("SpaceGacha")
-                :WaitForChild("Trigger")
-                :FireServer(unpack(args))
+            -- ใส่ pcall กันพังเงียบๆ กรณี path ยังไม่พร้อม
+            pcall(function()
+                local args = { "x10" }
+                workspace:WaitForChild("Containers")
+                    :WaitForChild("CoinGachaContainer")
+                    :WaitForChild("SpaceGacha")
+                    :WaitForChild("Trigger")
+                    :FireServer(unpack(args))
+            end)
         end
         task.wait(0.1)
     end
 end)
 
--- ตั้งค่าเริ่มต้นของ Toggle (บางไลบรารีจะเรียก Callback ให้อัตโนมัติ บางตัวไม่)
-Toggle:Set(true)
--- >>> sync สถานะให้ชัวร์ (กันกรณี Set ไม่เรียก Callback)
-autoGacha = Toggle:Get()
-
+-- ====== ตัวอย่างคอมโพเนนต์อื่น ๆ (ตามเดิม) ======
 local Button = GeneralSection:CreateButton({
     Name = "Button",
     Callback = function()
         print("Button clicked!")
     end
 })
-
 Button:Fire()
 
 local Slider = GeneralSection:CreateSlider({
@@ -64,7 +65,6 @@ local Slider = GeneralSection:CreateSlider({
         print("Slider value:", Value)
     end
 })
-
 Slider:Set(75)
 local sliderValue = Slider:Get()
 
@@ -76,7 +76,6 @@ local Dropdown = GeneralSection:CreateDropdown({
         print("Selected option:", Option)
     end
 })
-
 Dropdown:Set("Option 2")
 local option = Dropdown:Get()
 Dropdown:Refresh({"New Option 1", "New Option 2"}, false)
@@ -88,6 +87,5 @@ local ColorPicker = SettingsSection:CreateColorPicker({
         print("Selected color:", Color)
     end
 })
-
 ColorPicker:Set(Color3.fromRGB(0, 255, 0))
 local color = ColorPicker:Get()
