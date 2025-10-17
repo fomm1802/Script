@@ -12,15 +12,12 @@ local SettingsTab = Window:CreateTab("Settings")
 local GeneralSection = MainTab:CreateSection("Test Stuff")
 local SettingsSection = SettingsTab:CreateSection("Test Stuff")
 
--- ประกาศตัวแปรสถานะ
-local autoGacha = false
-
 -- Toggle จาก UI ของคุณ
 local Toggle = GeneralSection:CreateToggle({
     Name = "Auto Gacha",
     Default = false,
     Callback = function(Value)
-        autoGacha = Value
+        Default = Value
         print("Auto Gacha:", Value)
     end
 })
