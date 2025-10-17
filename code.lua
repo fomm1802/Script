@@ -50,7 +50,7 @@ local Toggle = GeneralSection:CreateToggle({
                     if not ok then
                         warn("[Auto Gacha] FireServer error:", err)
                     end
-                    task.wait(3) -- ปรับคูลดาวน์ตามใจ (วิ)
+                    task.wait(0.1) -- ปรับคูลดาวน์ตามใจ (วิ)
                 end
                 running.autoGacha = false
             end)
@@ -79,7 +79,7 @@ local Toggle1 = GeneralSection:CreateToggle({
                     if not ok then
                         warn("[Use Yut] FireServer error:", err)
                     end
-                    task.wait(2) -- คูลดาวน์การใช้ไอเทม
+                    task.wait(0.1) -- คูลดาวน์การใช้ไอเทม
                 end
                 running.useYut = false
             end)
