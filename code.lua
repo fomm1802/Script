@@ -62,7 +62,7 @@ local Toggle = GeneralSection:CreateToggle({
 })
 
 -- ====== Toggle: Use Yut ======
-local Toggle1 = GeneralSection:CreateToggle({
+local Toggle = GeneralSection:CreateToggle({
     Name = "Use Yut",
     Default = false,
     Callback = function(Value)
