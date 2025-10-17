@@ -12,12 +12,16 @@ local SettingsTab = Window:CreateTab("Settings")
 local GeneralSection = MainTab:CreateSection("Test Stuff")
 local SettingsSection = SettingsTab:CreateSection("Test Stuff")
 
+-- >>> เพิ่มตัวแปรสถานะสำหรับ Toggle
+local autoGacha = false
+
 -- Toggle จาก UI ของคุณ
 local Toggle = GeneralSection:CreateToggle({
     Name = "Auto Gacha",
     Default = false,
     Callback = function(Value)
-        Default = Value
+        -- >>> เก็บค่าที่ Toggle เปลี่ยนลงตัวแปรสถานะ
+        autoGacha = Value
         print("Auto Gacha:", Value)
     end
 })
@@ -37,9 +41,10 @@ task.spawn(function()
     end
 end)
 
+-- ตั้งค่าเริ่มต้นของ Toggle (บางไลบรารีจะเรียก Callback ให้อัตโนมัติ บางตัวไม่)
 Toggle:Set(true)
-
-local value = Toggle:Get()
+-- >>> sync สถานะให้ชัวร์ (กันกรณี Set ไม่เรียก Callback)
+autoGacha = Toggle:Get()
 
 local Button = GeneralSection:CreateButton({
     Name = "Button",
@@ -61,8 +66,7 @@ local Slider = GeneralSection:CreateSlider({
 })
 
 Slider:Set(75)
-
-local value = Slider:Get()
+local sliderValue = Slider:Get()
 
 local Dropdown = GeneralSection:CreateDropdown({
     Name = "Dropdown",
@@ -74,9 +78,7 @@ local Dropdown = GeneralSection:CreateDropdown({
 })
 
 Dropdown:Set("Option 2")
-
 local option = Dropdown:Get()
-
 Dropdown:Refresh({"New Option 1", "New Option 2"}, false)
 
 local ColorPicker = SettingsSection:CreateColorPicker({
@@ -88,5 +90,4 @@ local ColorPicker = SettingsSection:CreateColorPicker({
 })
 
 ColorPicker:Set(Color3.fromRGB(0, 255, 0))
-
 local color = ColorPicker:Get()
